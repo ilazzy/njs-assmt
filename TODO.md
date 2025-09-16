@@ -1,0 +1,5 @@
+- [ ] Set up the basic Express app
+- [ ] Create a route to receive account data
+- [ ] Implement webhook forwarding logic
+- [ ] Configure webhook URLs
+- [ ] Test the application

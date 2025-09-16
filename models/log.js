@@ -4,8 +4,8 @@ export default (sequelize, DataTypes) => {
     {
       event_id: {
         type: DataTypes.INTEGER,
-        unique: true,
-        defaultValue: DataTypes.NOW,
+        unique: true, //
+        defaultValue: DataTypes.NOW, // 
         allowNull: false,
       },
       received_timestamp: DataTypes.DATE,

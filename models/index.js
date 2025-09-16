@@ -38,5 +38,5 @@ Object.values(models).forEach((model) => {
 });
 
 // ✅ ESModule export
-export { sequelize };
+export { sequelize }; // models
 export default models;
