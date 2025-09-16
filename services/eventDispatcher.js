@@ -1,72 +1,115 @@
-import { Worker } from 'worker_threads';
-import path from 'path';
-import fs from 'fs'; // To check if worker file exists
-// import Log from '../models/log'; // Removed incorrect import
+import { Worker } from "worker_threads";
+import path from "path";
+import fs from "fs";
+import models from "../models/index.js";
 
-// Function to dispatch an event to a worker thread
-const dispatchEvent = (eventData) => {
-  return new Promise((resolve, reject) => {
-    const workerPath = path.resolve(__dirname, '../workers/eventProcessor.worker.js');
+const dispatchEvent = async (eventData) => {
+  return new Promise(async (resolve, reject) => {
+    const workerPath = path.resolve(
+      __dirname,
+      "../workers/eventProcessor.worker.js"
+    );
 
-    // Check if the worker file exists before attempting to create a worker
     if (!fs.existsSync(workerPath)) {
       console.error(`Worker file not found at: ${workerPath}`);
+      try {
+        await models.Log.create({
+          level: "error",
+          message: "Worker file not found",
+          details: JSON.stringify({
+            workerPath: workerPath,
+            eventType: eventData.type || "unknown",
+          }),
+          userId: eventData.userId || null,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (logError) {
+        console.error("Failed to log worker file not found error:", logError);
+      }
       return reject(new Error(`Worker file not found at: ${workerPath}`));
     }
 
-    // Log the event before dispatching
     const logEntry = {
-      level: 'info', // or 'debug', 'warn', 'error' based on eventData
-      message: `Event dispatched: ${eventData.type || 'unknown'}`,
+      level: "info",
+      message: `Event dispatched: ${eventData.type || "unknown"}`,
       details: JSON.stringify(eventData),
-      // Assuming eventData might contain userId or similar for context
       userId: eventData.userId || null,
       timestamp: new Date().toISOString(),
     };
 
-    // Attempt to log the event. If models.Log.create is async, this might need adjustment.
-    // For now, assuming it's synchronous or fire-and-forget.
     try {
-      // If models.Log.create is async, we'd need to make dispatchEvent async and await models.Log.create(logEntry);
-      models.Log.create(logEntry);
+      await models.Log.create(logEntry);
     } catch (error) {
-      console.error('Failed to log event:', error);
-      // Decide if logging failure should reject the promise or be ignored.
-      // For now, we'll log the error but still proceed with event dispatch.
+      console.error("Failed to log event:", error);
     }
 
     console.log(`Dispatching event to worker: ${JSON.stringify(eventData)}`);
 
     const worker = new Worker(workerPath, {
-      workerData: eventData // Pass initial data to the worker if needed
+      workerData: eventData,
     });
 
-    // Listen for messages from the worker
-    worker.on('message', (message) => {
-      console.log(`Main thread received message from worker: ${JSON.stringify(message)}`);
-      if (message.status === 'success') {
+    worker.on("message", (message) => {
+      console.log(
+        `Main thread received message from worker: ${JSON.stringify(message)}`
+      );
+      if (message.status === "success") {
         resolve(message.result);
       } else {
-        reject(new Error(message.error || 'Worker processing failed'));
+        models.Log.create({
+          level: "error",
+          message: "Worker processing failed",
+          details: JSON.stringify({
+            workerExitCode: message.code,
+            workerError: message.error,
+            eventType: eventData.type || "unknown",
+          }),
+          userId: eventData.userId || null,
+          timestamp: new Date().toISOString(),
+        }).catch((logError) =>
+          console.error("Failed to log worker error:", logError)
+        );
+        reject(new Error(message.error || "Worker processing failed"));
       }
     });
 
-    // Handle errors during worker execution
-    worker.on('error', (error) => {
-      console.error('Worker encountered an error:', error);
+    worker.on("error", (error) => {
+      console.error("Worker encountered an error:", error);
+      models.Log.create({
+        level: "error",
+        message: "Worker execution error",
+        details: JSON.stringify({
+          workerError: error.message,
+          eventType: eventData.type || "unknown",
+        }),
+        userId: eventData.userId || null,
+        timestamp: new Date().toISOString(),
+      }).catch((logError) =>
+        console.error("Failed to log worker execution error:", logError)
+      );
       reject(error);
     });
 
-    // Handle worker exit
-    worker.on('exit', (code) => {
+    worker.on("exit", (code) => {
       if (code !== 0) {
         const exitError = new Error(`Worker stopped with exit code ${code}`);
         console.error(exitError);
+        models.Log.create({
+          level: "error",
+          message: "Worker exited with non-zero code",
+          details: JSON.stringify({
+            workerExitCode: code,
+            eventType: eventData.type || "unknown",
+          }),
+          userId: eventData.userId || null,
+          timestamp: new Date().toISOString(),
+        }).catch((logError) =>
+          console.error("Failed to log worker exit error:", logError)
+        );
         reject(exitError);
       }
     });
 
-    // Send the event data to the worker
     worker.postMessage(eventData);
   });
 };

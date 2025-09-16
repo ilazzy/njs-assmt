@@ -1,5 +1,3 @@
-import models from "../models/index.js";
-
 const authorize = (requiredRole) => {
   return async (req, res, next) => {
     if (!req.user) {

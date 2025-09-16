@@ -18,14 +18,13 @@ const protect = async (req, res, next) => {
       // Get user from the token and include their role
       req.user = await models.User.findByPk(decoded.id, {
         attributes: { exclude: ["password"] },
-        include: [{ model: models.Role, as: "role" }], // Include role information
+        include: [{ model: models.Role, as: "role" }],
       });
 
       if (!req.user) {
         return res.status(401).json({ message: "Not authorized, user not found" });
       }
 
-      // Attach role to the request object
       req.user.roleName = req.user.role.role_name;
 
       next();

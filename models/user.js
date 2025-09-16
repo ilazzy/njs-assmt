@@ -8,8 +8,8 @@ export default (sequelize, DataTypes) => {
     roleId: {
       type: DataTypes.INTEGER,
       references: {
-        model: "roles", // This is a reference to the table name
-        key: "id", // This is a reference to the primary key in the table
+        model: "roles", 
+        key: "id",
       },
     },
   }, {

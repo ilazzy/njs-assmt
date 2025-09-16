@@ -48,15 +48,6 @@ const validate = (req, res, next) => {
 // Public routes
 router.post("/register", registerValidationRules, validate, registerUser);
 router.post("/login", loginValidationRules, validate, loginUser);
-
-// Protected routes
-// Example: Only ADMIN can get all users
 router.get("/get-all", protect, authorize("ADMIN"), getAllUsers);
-
-// Example: Admin can invite users (hypothetical route)
-// router.post("/invite", protect, authorize("ADMIN"), inviteUser); // Assuming inviteUser controller exists
-
-// Example: Users with ADMIN or MEMBER role can access certain account info (demonstration)
-// router.get("/accounts", protect, authorizeRoles(["ADMIN", "MEMBER"]), getAccounts); // Assuming getAccounts controller exists
 
 export default router;

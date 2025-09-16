@@ -1,6 +1,5 @@
 import models from "../models/index.js";
 import { Op } from "sequelize";
-// import Log from '../models/log'; // Removed incorrect import
 
 // Controller to search and filter logs
 export const searchLogs = async (req, res) => {

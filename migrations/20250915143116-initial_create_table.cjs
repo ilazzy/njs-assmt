@@ -128,7 +128,7 @@ module.exports = {
         autoIncrement: true,
       },
       account_id: {
-        type: Sequelize.INTEGER, // assuming it references accounts.id which is integer
+        type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: "accounts",
@@ -137,7 +137,7 @@ module.exports = {
         onDelete: "CASCADE",
       },
       user_id: {
-        type: Sequelize.INTEGER, // must match user.id type
+        type: Sequelize.INTEGER, 
         allowNull: false,
         references: {
           model: "users",
@@ -146,7 +146,7 @@ module.exports = {
         onDelete: "CASCADE",
       },
       role_id: {
-        type: Sequelize.INTEGER, // assuming role.id is integer
+        type: Sequelize.INTEGER, 
         allowNull: false,
         references: {
           model: "roles",
@@ -220,7 +220,6 @@ module.exports = {
     await queryInterface.dropTable("destinations");
     await queryInterface.dropTable("accounts");
 
-    // ENUM cleanup (MySQL does not use named ENUM types, but clean up anyway)
     await queryInterface.sequelize.query(
       "DROP TYPE IF EXISTS `enum_destinations_HTTP_method`;"
     );

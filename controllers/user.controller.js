@@ -143,7 +143,7 @@ export const loginUser = async (req, res) => {
       level: 'error',
       message: 'Failed to login',
       details: JSON.stringify({ email, error: err.message }),
-      userId: null, // No user ID yet if login failed due to server error
+      userId: null,
       timestamp: new Date().toISOString(),
     });
     res.status(500).json({ error: "Failed to login" });
