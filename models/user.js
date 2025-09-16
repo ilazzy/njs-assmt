@@ -5,6 +5,13 @@ export default (sequelize, DataTypes) => {
       unique: true,
     },
     password: DataTypes.STRING,
+    roleId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "roles", // This is a reference to the table name
+        key: "id", // This is a reference to the primary key in the table
+      },
+    },
   }, {
     tableName: "users",
     underscored: true,
@@ -12,6 +19,10 @@ export default (sequelize, DataTypes) => {
   });
 
   User.associate = (models) => {
+    User.belongsTo(models.Role, {
+      foreignKey: "roleId",
+      as: "role",
+    });
     User.hasMany(models.Account, {
       foreignKey: "created_by",
       as: "createdAccounts",
