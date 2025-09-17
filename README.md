@@ -46,4 +46,4 @@ This successfully migrated the `add-destinations` and `add-accounts` seed files.
 ## Next Steps
 
 - Ensure the `MYSQL_PASSWORD` in the `.env` file is changed to a secure value for production environments.
-- Review the `README.md` file for any further setup instructions or project details.
+- To start the application, run: `npm start`
